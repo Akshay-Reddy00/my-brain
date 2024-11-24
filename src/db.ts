@@ -1,9 +1,14 @@
 import 'dotenv/config';
 import mongoose, { model, Schema } from "mongoose";
 
-mongoose.connect(`${process.env.LOCAL_MONGO_URL}`);
-
-const ObjectId = Schema.ObjectId;
+export async function dbConnect() {
+    try{
+        await mongoose.connect(`${process.env.MONGO_URL}`);
+        console.log('***** Connected to DB *****');
+    } catch(e){
+        console.error('Error connecting to DB', e);
+    }
+}
 
 const UserSchema = new Schema({
     username: { type: String, required: true, unique: true },
@@ -22,4 +27,4 @@ const ContentSchema = new Schema({
     userId: { type: mongoose.Types.ObjectId, ref: 'User', required: true },
 })
 
-export const ContentModel = model("Content", ContentSchema);
+export const ContentModel = model("Content", ContentSchema); // 'Content' table in MongoDb

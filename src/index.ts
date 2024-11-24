@@ -1,11 +1,12 @@
 import express from "express";
 import jwt from "jsonwebtoken";
-import { ContentModel, UserModel } from "./db";
+import { ContentModel, dbConnect, UserModel } from "./db";
 import { userMiddleware } from "./middleware";
 import { JWT_PASSWORD } from "./config";
 
 const app = express();
 app.use(express.json());
+dbConnect();
 
 app.post("/api/v1/signup", async function(req, res){
     // zod validation
@@ -34,6 +35,7 @@ app.post("/api/v1/signup", async function(req, res){
 app.post("/api/v1/signin", async function(req, res){
     const username = req.body.username;
     const password = req.body.password;
+
     const existingUser = await UserModel.findOne({
         username,
         password
@@ -66,7 +68,6 @@ app.post("/api/v1/content", userMiddleware, async function(req, res){
             link,
             type,
             title,
-            //@ts-ignore
             userId: req.userId,
             tags:[]
         })
@@ -83,7 +84,6 @@ app.post("/api/v1/content", userMiddleware, async function(req, res){
 })
 
 app.get("/api/v1/content", userMiddleware, async function(req, res){
-    //@ts-ignore
     const userId = req.userId;
     const content = await ContentModel.find({
         userId: userId
@@ -92,6 +92,31 @@ app.get("/api/v1/content", userMiddleware, async function(req, res){
     res.json({
         content
     })
+})
+
+app.delete("/api/v1/content", userMiddleware, async function(req, res){
+    const contentId = req.body.contentId;
+
+    if(!contentId){
+        res.status(404).json({
+            message: "contentId is needed"
+        })
+    }
+
+    try{
+        await ContentModel.deleteOne({
+            _id: contentId,
+            userId: req.userId
+        })
+
+        res.json({
+            message: `${contentId} deleted`
+        })
+    } catch(e) {
+        res.status(403).json({
+            message: e
+        })
+    }
 })
 
 app.post("/api/v1/brain/share", function(req, res){
