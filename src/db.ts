@@ -17,7 +17,7 @@ const UserSchema = new Schema({
 
 export const UserModel = model("User", UserSchema); // 'User' table in MongoDb
 
-const contentTypes = ['image', 'video', 'article', 'audio'];
+const contentTypes = ['youtube', 'twitter'];
 
 const ContentSchema = new Schema({
     link: { type: String, required: true },
@@ -28,3 +28,10 @@ const ContentSchema = new Schema({
 })
 
 export const ContentModel = model("Content", ContentSchema); // 'Content' table in MongoDb
+
+const LinkSchema = new Schema({
+    hash: String,
+    userId: {type: mongoose.Types.ObjectId, ref: 'User', required: true, unique: true}
+})
+
+export const LinkModel = model("Link", LinkSchema);
